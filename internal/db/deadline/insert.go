@@ -14,7 +14,7 @@ func (db *Database) Insert(deadline models.Deadline) error {
 	_, err := db.Db().Exec(query, args...)
 
 	if err != nil {
-		log.Error("Failed to insert deadline: ", err)	
+		log.Error("Failed to insert deadline: ", err)
 		return err
 	}
 

@@ -21,7 +21,6 @@ func InitDb() (*Database, error) {
 		return nil, err
 	}
 
-	// create table with deadlines
 	createTableSQL := `
 		CREATE TABLE IF NOT EXISTS deadlines (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,

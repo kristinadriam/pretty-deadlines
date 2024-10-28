@@ -23,7 +23,7 @@ func DeleteDeadlineById(db *sql.DB, id int) error {
 	if rowsAffected == 0 {
 		log.Info("No deadline found with the provided id.")
 	} else {
-		log.Info("Deadline with id \"%d\" successfully deleted!\n", id)
+		log.Info(fmt.Sprintf("Deadline with id \"%d\" successfully deleted!\n", id))
 	}
 
 	return nil
