@@ -20,7 +20,6 @@ func InitDb() (*Database, error) {
 		log.Fatalf("Failed to connect to DB: %v", err)
 		return nil, err
 	}
-	defer db.Close()
 
 	// create table with deadlines
 	createTableSQL := `
@@ -28,7 +27,7 @@ func InitDb() (*Database, error) {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		title TEXT NOT NULL,
 		description TEXT,
-		deadline TEXT
+		deadline DATETIME
 		);`
 	_, err = db.Exec(createTableSQL)
 	if err != nil {
@@ -39,6 +38,6 @@ func InitDb() (*Database, error) {
 	return &Database{db: db}, nil
 }
 
-func (database *Database) Exec(query string, args ...any) (sql.Result, error) {
-	return database.db.Exec(query, args)
+func (database *Database) Db() *sql.DB {
+	return database.db
 }
