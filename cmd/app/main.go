@@ -15,11 +15,11 @@ import (
 	"fyne.io/fyne/widget"
 )
 
-var database *db.Database // Предполагается, что у вас есть структура Database в вашем пакете db
+var database *db.Database
 
 func main() {
 	var err error
-	database, err = db.InitDb() // Инициализация базы данных
+	database, err = db.InitDb()
 	if err != nil {
 		dialog.ShowInformation("Ошибка", "Не удалось подключиться к базе данных.", nil)
 		os.Exit(1)
@@ -45,7 +45,6 @@ func main() {
 	myWindow.ShowAndRun()
 }
 
-// Функция для создания окна создания дедлайна
 func createDeadlineWindow(myApp fyne.App) {
 	win := myApp.NewWindow("Создание дедлайна")
 
@@ -55,12 +54,10 @@ func createDeadlineWindow(myApp fyne.App) {
 	descEntry := widget.NewEntry()
 	descEntry.SetPlaceHolder("Описание дедлайна")
 
-	// Dropdowns для выбора дня, месяца и года
 	dayEntry := widget.NewSelect(getDays(), func(day string) {})
 	monthEntry := widget.NewSelect(getMonths(), func(month string) {})
 	yearEntry := widget.NewSelect(getYears(), func(year string) {})
 
-	// Dropdowns для выбора часа и минуты
 	hourEntry := widget.NewSelect(getHours(), func(hour string) {})
 	minuteEntry := widget.NewSelect(getMinutes(), func(minute string) {})
 
@@ -87,10 +84,9 @@ func createDeadlineWindow(myApp fyne.App) {
 			DueDate:     dueDate,
 		}
 
-		// Вставка в базу данных
 		err := database.Insert(deadlineEntry)
 		if err != nil {
-			dialog.ShowInformation("Ошибка", "Не удалось сохранить дедлайн в базе данных.", win)
+			dialog.ShowInformation("Ошибка", "Не удалось сохранить дедлайн в базе данных", win)
 			return
 		}
 
@@ -117,27 +113,38 @@ func createDeadlineWindow(myApp fyne.App) {
 	win.Show()
 }
 
-// Функция для отображения всех дедлайнов
 func viewDeadlines(myApp fyne.App) {
-	// Создание окна для просмотра дедлайнов
 	viewWin := myApp.NewWindow("Список дедлайнов")
-	// deadlinesList := widget.NewList(
-	//	func() int {
-	//		deadlines, _ := database.GetAll() // Получите дедлайны из базы данных
-	//		return len(deadlines)
-	//	},
-	//	func() fyne.CanvasObject {
-	//		return widget.NewLabel("")
-	//	},
-	//	func(i int, o fyne.CanvasObject) {
-	//		deadlines, _ := database.GetAll() // Получите дедлайны из базы данных
-	//		o.(*widget.Label).SetText(deadlines[i].Title + " - " + deadlines[i].DueDate)
-	//	},
-	//)
+
+	viewWin.Resize(fyne.NewSize(600, 400))
+
+	deadlines, err := database.GetAllDeadlines()
+	if err != nil {
+		dialog.ShowInformation("Ошибка", "Не удалось получить дедлайны из базы данных.", viewWin)
+		viewWin.Close()
+		return
+	}
+
+	deadlinesList := widget.NewList(
+		func() int {
+			return len(deadlines)
+		},
+		func() fyne.CanvasObject {
+			return widget.NewLabel("")
+		},
+		func(i int, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(deadlines[i].Title + " - " + deadlines[i].DueDate.Format("2006-01-02 15:04:05"))
+		},
+	)
+
+	deadlinesList.OnSelected = func(id int) {
+		selectedDeadline := deadlines[id]
+		dialog.ShowInformation(selectedDeadline.Title, selectedDeadline.Description, viewWin) // Покажите описание дедлайна
+	}
 
 	viewWin.SetContent(container.NewVBox(
 		widget.NewLabel("Список дедлайнов"),
-		// deadlinesList,
+		deadlinesList,
 		widget.NewButton("Закрыть", func() {
 			viewWin.Close()
 		}),
@@ -145,7 +152,6 @@ func viewDeadlines(myApp fyne.App) {
 	viewWin.Show()
 }
 
-// Функции для получения дней, месяцев и лет
 func getDays() []string {
 	days := make([]string, 31)
 	for i := 1; i <= 31; i++ {
