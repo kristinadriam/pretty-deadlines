@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+
 	log "github.com/sirupsen/logrus"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -27,7 +28,7 @@ func InitDb() (*Database, error) {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		title TEXT NOT NULL,
 		description TEXT,
-		deadline DATETIME
+		deadline TEXT
 		);`
 	_, err = db.Exec(createTableSQL)
 	if err != nil {
